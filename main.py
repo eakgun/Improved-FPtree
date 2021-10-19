@@ -1,12 +1,12 @@
 from collections import defaultdict, OrderedDict
 from csv import reader
 from itertools import chain, combinations
-from fpGrowth import Node as fp
+from fpGrowth import *
 
 
 
 def fpTreeFromFile(fname, minSupThreshold, minConf):
-    itemSetList, frequency = fp.getFromFile(fname)
+    itemSetList, frequency = Node.getFromFile(fname)
     minSup = len(itemSetList) * minSupThreshold
-    headerTable = fp.constructTree(itemSetList, frequency, minSup)
+    headerTable = constructTree(itemSetList, frequency, minSup)
     return headerTable
