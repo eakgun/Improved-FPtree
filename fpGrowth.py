@@ -12,19 +12,25 @@ class FPNode:
         self.parent = parentNode
         self.children = {}
         self.next = None
-        self.indd = []
-
+        
+    lvld = []
+    lbl = []
+    cnt = []
     def increment(self, counts):
         self.count += counts
 
+    # def lvlCount(lvl):
+    #     self.lvld += [lvl]
 
-    def display(self, ind=1):
-        # print(ind, self.name, ' ', self.count)
-        print(ind)
-        self.indd += [ind]
+    def display(self, lvl=1):
+        print(lvl ,' '*lvl, self.name, ' ', self.count)
+        
+        self.lvld += [lvl] 
+        self.lbl += [self.name]
+        self.cnt += [self.count]
         for child in list(self.children.values()):
         
-            child.display(ind+1)
+            child.display(lvl+1)
            
 
 def getFromFile(fname):
@@ -105,48 +111,7 @@ def updateTree(item, treeNode, headerTable, counts):
     return treeNode.children[item]
 
 
-def mineFP(headerTable, minSup, preFix, freqItemList):
-    #Sort by count and create a list
-    sortedItemList = [item[0] for item in sorted(list(headerTable.items()), key=lambda p: p[1][0])]
-    # Start with the lowest support
-    for item in sortedItemList:
-     # Pattern growth is achieved by the concatenation of suffix pattern with 
-     # frequent patterns generated from conditional FP-tree
-     newFreqSet = preFix.copy()
-     newFreqSet.add(item)
-     freqItemList.append(newFreqSet)
-     #Find all prefix path, construct conditional pattern base
-     conditionalPatternBase, counts = findPrefixPath(item, headerTable)
-     #construct conditional FP tree with cond patt base
-     conditionalTree, newHeaderTable = constructTree(conditionalPatternBase, counts, minSup)
-     if newHeaderTable !=None:
-         #Recursively mine on the tree
-         mineFP(newHeaderTable, minSup, preFix, freqItemList)
 
-
-def findPrefixPath(basePattern, headerTable):
-    #First node in the linked list
-    treeNode = headerTable[basePattern][1]
-    condPatterns = []
-    counts = []
-    while treeNode != None:
-        prefixPath = []
-        # from leaf node all the way to the root
-        ascendTree(treeNode, prefixPath)
-        if len(prefixPath) > 1:
-            #Store the path and the count
-            condPatterns.append(prefixPath[1:])
-            counts.append(treeNode.count)
-        
-        #next node
-        treeNode = treeNode.next
-
-    return condPatterns, counts
-
-def ascendTree(node, prefixPath):
-    if node.parent != None:
-        prefixPath.append(node.name)
-        ascendTree(node.parent, prefixPath)
 
 # ---ItemSetList---    
 #  [['a', 'c', 'd', 'f', 'g', 'i', 'm', 'p'],
