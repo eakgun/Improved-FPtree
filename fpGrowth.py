@@ -1,8 +1,7 @@
 from csv import reader
 from collections import defaultdict
 from itertools import chain, combinations
-import networkx as nx
-from graphUtils import *
+import igraph as ig
 import functools
 
 class FPNode:
@@ -12,25 +11,81 @@ class FPNode:
         self.parent = parentNode
         self.children = {}
         self.next = None
-        
+
     lvld = []
-    lbl = []
+    lbl = []    
     cnt = []
+
+    def capture(self,lvl,lvld,lbl,cnt):
+        
+        lvld += [lvl] 
+        lbl += [self.name]
+        cnt += [self.count]
+        
+        
+
+    def fpPlot(self, fname):
+        
+        #Drawing the FPtree
+        self.stats()
+        # paired_Set = [(u, v) for u in fpTree.lvld for v in fpTree.lvld if v-u == 1]
+       
+        pairs = []
+        pairs = list(enumerate(self.lvld)) 
+        print(pairs)
+        paired = [(u,v) for v, u in pairs]
+        pairedx = [(v,self.lbl[v]+':'+str(self.cnt[v])) for u,v in paired]
+        
+        print(self.lvld)
+        print(pairs)
+        
+        
+        d = defaultdict(list)
+
+        for k,v in paired:
+            d[k].append(v) 
+
+        new_pair = []
+
+        for i in range(1, len(d)):
+            for j in range(len(d[i])):
+                for k in range(len(d[i+1])):
+                    try:
+                        if d[i][j] < d[i+1][k] and d[i+1][k] < d[i][j+1]:
+                            new_pair += [(d[i][j], d[i+1][k])]
+                    except:
+                        new_pair += [(d[i][j], d[i+1][k])]
+
+
+        labels = [u for v,u in pairedx]
+
+
+        #igraph vertex IDs starts from zero.
+        print(pairs)
+        g = ig.Graph()
+        g.add_vertices(len(pairs))
+        g.add_edges(new_pair)
+        g.vs["label"] = labels
+        visual_style = {}
+        visual_style["vertex_size"] = 40
+        visual_style["vertex_color"] = "#4d4dff"
+        visual_style["vertex_label_color"] = "white"
+        layout = g.layout_reingold_tilford(root=[0])
+        
+        return g, visual_style, layout
+
     def increment(self, counts):
         self.count += counts
 
     # def lvlCount(lvl):
     #     self.lvld += [lvl]
-
-    def display(self, lvl=1):
+    
+    def stats(self, lvl=1):
         print(lvl ,' '*lvl, self.name, ' ', self.count)
-        
-        self.lvld += [lvl] 
-        self.lbl += [self.name]
-        self.cnt += [self.count]
+        self.capture(lvl,self.lvld,self.lbl,self.cnt)
+
         for child in list(self.children.values()):
-        
-            child.display(lvl+1)
+            child.stats(lvl+1)
            
 
 def getFromFile(fname):
